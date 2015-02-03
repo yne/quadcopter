@@ -1,0 +1,91 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<style>
+.tool>*{
+	display:block;
+	text-align: right;
+}
+.tool {
+	position: absolute;
+	border: 1px solid #000;
+	border-radius: 5px;
+	padding: 5px;
+	margin-right:32px;
+	right: 50%;
+	bottom: 2em;
+	background: #FFF;
+}
+textarea{
+	resize: none;
+	position: absolute;
+	width: 50%;
+	height: 100%;
+	top: 0;
+	padding: 0;
+	margin: 0;
+	border:0;
+	box-shadow: 0px 0px 2px #000 inset;
+}
+</style>
+<script>
+function macro2struct(macro,type_cb,name_cb){
+	var max_size=32;
+	if(!type_cb)type_cb=function(size){return "uint"+(size||32)+"_t";}
+	if(!name_cb)name_cb=function(name){return name
+		.toLowerCase()
+		.match(/[A-Za-z]+_(.*)/)[1]//no need to keep the suffix (TODO:keep it if nothing left)
+		.replace(/(\_[a-z])/g,function(a){return a.toUpperCase()})
+		.replace(/_/g,'')}
+	var unk=0;//number of unknow entries
+	return macro.split('\n')
+		.map(function(l){return l.split(/\s+/)})
+		.filter(function(l){return l[0]=="#define"})
+		.sort(function(x,y){return x[2]>y[2]})
+		.map(function(l,i,a){
+			var size=((a[i+1]||l)[2]-l[2])*8;
+			var entry_size=Math.min(size,max_size);
+			var ret=type_cb(entry_size)+" "+name_cb(l[1])+";"
+			if(size>max_size)//padding needed
+				ret+='\n'+type_cb(8)+" unk"+((l[2]*1).toString(16))+"["+(size-entry_size)/8+"];//padding";
+			return ret;
+			})
+		.join('\n');
+}
+</script>
+</head>
+<body>
+<textarea id="ori" spellcheck="false" placeholder="paste macro here" style="left :0;">
+#define GPIO_REV                0x000
+#define GPIO_SYSCONFIG          0x010
+#define GPIO_EOI                0x020
+#define GPIO_IRQSTATUS_RAW_0    0x024
+#define GPIO_IRQSTATUS_RAW_1    0x028
+#define GPIO_IRQSTATUS_0        0x02C
+#define GPIO_IRQSTATUS_1        0x030
+#define GPIO_IRQSTATUS_SET_0    0x034
+#define GPIO_IRQSTATUS_SET_1    0x038
+#define GPIO_IRQSTATUS_CLR_0    0x03C
+#define GPIO_IRQSTATUS_CLR_1    0x040
+#define GPIO_IRQWAKEN_0         0x044
+#define GPIO_IRQWAKEN_1         0x048
+#define GPIO_SYSSTATUS          0x114
+#define GPIO_CTRL               0x130
+#define GPIO_OE                 0x134
+#define GPIO_DATAIN             0x138
+#define GPIO_DATAOUT            0x13C
+#define GPIO_LEVELDETECT0       0x140
+#define GPIO_LEVELDETECT1       0x144
+#define GPIO_RISINGDETECTE      0x148
+#define GPIO_FALLINGDETECTE     0x14C
+#define GPIO_DEBOUNCENABLE      0x150
+#define GPIO_DEBOUNCINGTIME     0x154
+#define GPIO_CLEARDATAOUT       0x190
+#define GPIO_SETDATAOUT         0x194
+</textarea>
+<textarea id="mod" spellcheck="false" readonly placeholder="see struct here" style="right:0;color: #666;"></textarea>
+<div class="tool">
+	<button onclick="document.getElementById('mod').value=(macro2struct(document.getElementById('ori').value))">convert</button>
+</div>
+</body>
+</html>
