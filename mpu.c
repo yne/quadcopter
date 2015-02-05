@@ -7,11 +7,7 @@
 #include "MPU6050.h"
 #include "mpu.h"
 
-#include "types.h"
-
-
-#include <sys/time.h>
-unsigned long gettime();
+#include "common.h"
 
 
 /////////// GLOBAL ////////////
@@ -27,8 +23,6 @@ MPU_Data_RAW mpu_data_raw; //data brutes
 
 unsigned long lastTime;
 float dt;
-//float gXdt = 0.0;
-//float gYdt = 0.0;
 
 float avggX = 0;
 float avggY = 0;
@@ -68,15 +62,13 @@ void mpuUpdate(){
 	float GF= M_PI * 500.0 / (32768.0 * 180.0); //GyroFactor = 500 degree / sec
 
 	mpu_data_raw = (MPU_Data_RAW){
-				SW(0)*AF,//-ctx.avg.AccX,
-				SW(1)*AF,//-ctx.avg.AccY,
-				SW(2)*AF,//-ctx.avg.AccZ,
-				SW(4)*GF,//-ctx.avg.GyrX,
-				SW(5)*GF,//-ctx.avg.GyrY,
-				SW(6)*GF//-ctx.avg.GyrZ
+				SW(0)*AF,
+				SW(1)*AF,
+				SW(2)*AF,
+				SW(4)*GF,
+				SW(5)*GF,
+				SW(6)*GF
 	};
-	//gXdt = fmod((gXdt + mpu_data_raw.GyrX), M_PI);
-	//gYdt = fmod((gYdt + mpu_data_raw.GyrY), M_PI);
 	dt = (gettime() - lastTime) / 1000000.0;
 	lastTime = gettime();
 }
@@ -105,45 +97,22 @@ void mpuInit(){
 	lastTime = gettime();
 	printf("%f %f\n", avggX, avggY );
 }
-
-//typedef struct{float AccX,AccY,AccZ,Term,GyrX,GyrY,GyrZ;}MPU_Data;
-//typedef struct{float AX,AY;}MPU_Data;
+void mpuStop(){
+	close(I2C);
+}
 
 float getAX(){
 	mpu_data.AX = K*(mpu_data.AX + (mpu_data_raw.GyrX- avggX) * dt) + (1.0 - K) * atan2f(mpu_data_raw.AccX,
 															  sqrt(powf(mpu_data_raw.AccY,2.0) + powf(mpu_data_raw.AccZ,2.0))
 															  );
-	printf("AX en ° : %f\n",mpu_data.AX * 180.0 / M_PI);
-return mpu_data.AX;
+	//printf("AX en ° : %f\t",mpu_data.AX * 180.0 / M_PI);
+	return mpu_data.AX;
 }
 
 float getAY(){
 	mpu_data.AY = K*(mpu_data.AY + (mpu_data_raw.GyrY- avggY) * dt) + (1.0 - K) * atan2f(mpu_data_raw.AccY,
 															  sqrt(powf(mpu_data_raw.AccX,2.0) + powf(mpu_data_raw.AccZ,2.0))
 															  );
-	printf("AY en ° : %f\n",mpu_data.AY * 180.0 / M_PI);
+	//printf("AY en ° : %f\n",mpu_data.AY * 180.0 / M_PI);
 	return mpu_data.AY;
 }
-
-
-/*
-int main(){
-	setvbuf(stdout, NULL, _IONBF, 0);//debufferise stdout (pour les \r via putty)
-	mpuInit();
-	pwmInit();
-	#define H 4000
-	#define L 3000
-	#define S .7
-	PWM1->cmpa=PWM1->cmpb=PWM2->cmpa=PWM2->cmpb=L;
-	while(0){
-		MPU_Data g=mpuGet();
-		printf("% 4.2f    % 4.2f    % 4.2f    % 4.2f    % 4.2f    % 4.2f    \r",g.AccX,g.AccY,g.AccZ,g.GyrX,g.GyrY,g.GyrZ);
-		PWM1->cmpa=((g.AccX>S) && (g.AccY>S))?H:L;//NE++
-		PWM1->cmpb=((g.AccX<S) && (g.AccY>S))?H:L;//SE-+
-		PWM2->cmpa=((g.AccX>S) && (g.AccY<S))?H:L;//NW+-
-		PWM2->cmpb=((g.AccX<S) && (g.AccY<S))?H:L;//SW--
-	}
-	pwmStop();
-	return 0;
-}
- */

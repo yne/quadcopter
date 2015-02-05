@@ -6,9 +6,9 @@ typedef struct{float AX,AY;}MPU_Data;
 
 MPU_Data mpuGet();
 void mpuInit();
+void mpuStop();
 
 float getAX();
 float getAY();
-//float getAZ();
 
 #endif

@@ -10,6 +10,15 @@
 #define PWM_1_START  0x48302000
 #define PWM_2_START  0x48304000
 
+#define MOTOR_FL 1 << 0
+#define MOTOR_FR 1 << 1
+#define MOTOR_BL 1 << 2
+#define MOTOR_BR 1 << 3
+
+#define SPEED_0 3000
+#define SPEED_MIN 3800
+#define SPEED_MAX 6000
+
 typedef struct{
 	volatile uint32_t rev,_0[3],sysconfig,_1[3],eoi,
 	irqstatus_raw_0,irqstatus_raw_1,irqstatus_0,irqstatus_1,
@@ -31,4 +40,6 @@ typedef struct{
 
 void pwmInit();
 void pwmStop();
+void setSpeed(int motor, int throttle, int r_computed, int p_computed);
+
 #endif

@@ -3,11 +3,11 @@
 
 #define DT 10000
 
-#define PITCH 1
-#define ROLL 2
-#define YAW 3
+#define PITCH 0
+#define ROLL 1
+#define YAW 2
 
-float pid(int axe, float value, float mesure);
+float pidCompute(int axe, float value, float mesure);
 void pidInit();
 
 #endif
