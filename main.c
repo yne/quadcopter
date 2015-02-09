@@ -7,46 +7,48 @@
 #include "pid.h"
 #include "keyboard.h"
 
+int alive=1;
+
 void killme(int signo){
-	printf("\nBreak (%s)\n",signo?"Ctrl":"Esc");
-	pwmStop();
-	mpuStop();
-	kbdStop();
+	printf("\n//Break (%s)\n",signo?"Ctrl":"Esc");
+	alive=0;
 }
 
-int main(){
-	printf("Quadcopter, en avant toute !\n");
-	int i;
-	float r_computed, p_computed; //PID ROLL & PID PITCH
-	
+int main(int argc,char**argv){
 	signal(SIGINT ,killme);//CTRL+C
 	signal(SIGSTOP,killme);//CTRL+Z
 
-	
-	
-	pidInit();
+	int i;
+	for(i=1;i<argc;i++){
+		switch(argv[i][0]){
+			case 'p':Kp=0.01*atoi(argv[i]+2);break;
+			case 'i':Ki=0.01*atoi(argv[i]+2);break;
+			case 'd':Kd=0.01*atoi(argv[i]+2);break;
+			default:;
+		}
+	}
+	//Initialisation
 	mpuInit();
+	pidInit();
 	pwmInit();
 	kbdInit();
+	printf("<html><body><div id=\"curve_chart\" style=\"width: 1920px; height: 1080px\"></div>"
+"<script src=\"https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1','packages':['corechart']}]}\"></script>"
+"<script>google.setOnLoadCallback(drawChart);function drawChart() {"
+"(new google.visualization.LineChart(document.getElementById('curve_chart')))"
+".draw(google.visualization.arrayToDataTable(["
+"	['n', 'Roll', 'Pitch'],");
 	
-	while(1){
+	for(i=0;alive;i++){
+		kbdGet();
 		mpuUpdate();
-		p_computed = pidCompute (PITCH, 0.0, getAX());
-		r_computed = pidCompute (ROLL, 0.0, getAY());
-		printf("p : %f\tr : %f\n", p_computed, r_computed);
-		setSpeed(MOTOR_FL|MOTOR_FR|MOTOR_BL|MOTOR_BR, 4000, pidToInt(r_computed) , pidToInt(p_computed));
-		usleep(10000);
-		//printf("Hello\n");
+		float p_computed = pidCompute (PITCH, usr_pitch, getAX());
+		float r_computed = pidCompute (ROLL , usr_roll , getAY());
+		printf("['%i',%f,%f],\n",i, p_computed, r_computed);
+		setSpeed(MOTOR_FL|MOTOR_FR|MOTOR_BL|MOTOR_BR, global_speed, pidToInt(r_computed) , pidToInt(p_computed));
 	}
+	printf("]), {curveType: 'function',legend: { position: 'bottom' }});}</script></body></html>");
 
-	
-	/***********************************************************
-	FIXER PWM
-	MODIFIER LES PWM EN FONCTION DES PID
-	CALIBRER LE GYRO AU DEMARRAGE
-	TESTER AVEC LES HELICES POUR MODIFIER NOS Kp Ki Kd
-	***********************************************************/
-	
 	pwmStop();
 	mpuStop();
 	kbdStop();

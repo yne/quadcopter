@@ -15,10 +15,6 @@
 #define MOTOR_BL 1 << 2
 #define MOTOR_BR 1 << 3
 
-#define SPEED_0 3000
-#define SPEED_MIN 3800
-#define SPEED_MAX 6000
-
 typedef struct{
 	volatile uint32_t rev,_0[3],sysconfig,_1[3],eoi,
 	irqstatus_raw_0,irqstatus_raw_1,irqstatus_0,irqstatus_1,

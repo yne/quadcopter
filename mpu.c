@@ -85,17 +85,17 @@ void mpuInit(){
 	mpuSet(MPU6050_RA_ACCEL_CONFIG, MPU6050_ACCEL_FS_16);
 	
 	int i;
-	for(i = 0; i < 1000; i ++){
+	for(i = 0; i < 50; i ++){
 		mpuUpdate();
 		avggX =+ mpu_data_raw.GyrX;
 		avggY =+ mpu_data_raw.GyrY;
 		usleep(500);
 		
 	}
-	avggX /= 1000;
-	avggY /= 1000;
+	avggX /= 50;
+	avggY /= 50;
 	lastTime = gettime();
-	printf("%f %f\n", avggX, avggY );
+	//printf("%f %f\n", avggX, avggY );
 }
 void mpuStop(){
 	close(I2C);

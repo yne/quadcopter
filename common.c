@@ -1,4 +1,6 @@
 #include <sys/time.h>
+#include "common.h"
+
 unsigned long gettime(){
 	struct timeval tv;
 	struct timezone tz;
@@ -8,6 +10,7 @@ unsigned long gettime(){
 
 int pidToInt(float pid){
 	return (int) (pid * 5000.0);
-	
-	
 }
+
+float usr_pitch=0.0,usr_roll=0.0;
+unsigned global_speed=SPEED_MIN;
