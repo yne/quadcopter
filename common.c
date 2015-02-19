@@ -4,7 +4,9 @@
 unsigned long gettime(){
 	struct timeval tv;
 	struct timezone tz;
+#ifndef WCET
 	gettimeofday(&tv, &tz);
+#endif
 	return tv.tv_sec * 1000000L + tv.tv_usec;   
 }
 

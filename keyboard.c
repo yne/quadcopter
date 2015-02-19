@@ -5,16 +5,19 @@
 #include "pid.h"
 
 int KBD;
+#ifndef WCET
 void kbdInit(){//char*path){
 	char path[] = "/dev/input/event0";
 	if((KBD = open(path, O_RDONLY|O_NONBLOCK))<0)
 		perror(__FUNCTION__);
 }
-
+#endif
 void kbdGet(){
 	if(KBD<0)return;//not connected
 	struct input_event ie;
+#ifndef WCET
 	if(read(KBD, &ie, sizeof(ie))<=0)return;//nothing to read
+#endif
 	if((ie.type==EV_MSC) || !ie.code || (ie.value==2))return;
 	if(ie.value==1){//keypress
 		switch(ie.code){
@@ -47,6 +50,8 @@ void kbdGet(){
 		}
 	}
 }
+#ifndef WCET
 void kbdStop(){
 	close(KBD);
 }
+#endif

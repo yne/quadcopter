@@ -30,7 +30,12 @@ float avggY = 0;
 int mpuSet(unsigned short cmd,unsigned char val){
 	union i2c_smbus_data data={byte:val};
 	struct i2c_smbus_ioctl_data blk={I2C_SMBUS_WRITE,cmd,I2C_SMBUS_BYTE_DATA,&data};
+	
+#ifndef WCET
 	return ioctl(I2C,I2C_SMBUS,&blk);
+#else
+	return 0;
+#endif
 }
 /*
 MPU_Data mpuGet(){
@@ -73,7 +78,7 @@ void mpuUpdate(){
 	lastTime = gettime();
 }
 
-
+#ifndef WCET
 void mpuInit(){
 	assert((I2C = open(I2C_PATH, O_RDWR))>=0);
 	assert(ioctl(I2C,I2C_SLAVE,MPU6050_DEFAULT_ADDRESS)>=0);
@@ -100,7 +105,7 @@ void mpuInit(){
 void mpuStop(){
 	close(I2C);
 }
-
+#endif
 float getAX(){
 	mpu_data.AX = K*(mpu_data.AX + (mpu_data_raw.GyrX- avggX) * dt) + (1.0 - K) * atan2f(mpu_data_raw.AccX,
 															  sqrt(powf(mpu_data_raw.AccY,2.0) + powf(mpu_data_raw.AccZ,2.0))

@@ -11,6 +11,7 @@
 #define PWM2  ctx.pwm2
 #define GPIO  ctx.gpio
 
+#ifndef WCET
 void*mapGet(int start){
 	int devmem_fd = open("/dev/mem", O_RDWR|O_SYNC);
 	assert(devmem_fd>=0);
@@ -34,6 +35,7 @@ void pwmStop(){
 	munmap(&ctx.pwm2,getpagesize());
 	munmap(&ctx.gpio,getpagesize());
 }
+#endif
 #define MINMAX(val) (val>SPEED_MAX?SPEED_MAX:(val<SPEED_MIN)?SPEED_MIN:val)
 void setSpeed(int motor, int throttle, int r_computed, int p_computed){
 	//valeur comprise entre 3600 et 6000
