@@ -107,17 +107,13 @@ void mpuStop(){
 }
 #endif
 float getAX(){
-	mpu_data.AX = K*(mpu_data.AX + (mpu_data_raw.GyrX- avggX) * dt) + (1.0 - K) * atan2f(mpu_data_raw.AccX,
-															  sqrt(powf(mpu_data_raw.AccY,2.0) + powf(mpu_data_raw.AccZ,2.0))
-															  );
+	mpu_data.AX = K*(mpu_data.AX + (mpu_data_raw.GyrX- avggX) * dt) + (1.0 - K) * atan2f(mpu_data_raw.AccX,sqrt(powf(mpu_data_raw.AccY,2.0) + powf(mpu_data_raw.AccZ,2.0)));
 	//printf("AX en ° : %f\t",mpu_data.AX * 180.0 / M_PI);
 	return mpu_data.AX;
 }
 
 float getAY(){
-	mpu_data.AY = K*(mpu_data.AY + (mpu_data_raw.GyrY- avggY) * dt) + (1.0 - K) * atan2f(mpu_data_raw.AccY,
-															  sqrt(powf(mpu_data_raw.AccX,2.0) + powf(mpu_data_raw.AccZ,2.0))
-															  );
+	mpu_data.AY = K*(mpu_data.AY + (mpu_data_raw.GyrY- avggY) * dt) + (1.0 - K) * atan2f(mpu_data_raw.AccY,sqrt(powf(mpu_data_raw.AccX,2.0) + powf(mpu_data_raw.AccZ,2.0)));
 	//printf("AY en ° : %f\n",mpu_data.AY * 180.0 / M_PI);
 	return mpu_data.AY;
 }
