@@ -106,14 +106,38 @@ void mpuStop(){
 	close(I2C);
 }
 #endif
+float atan2_fast( float y, float x )
+{
+    static const uint32_t sign_mask = 0x80000000;
+    static const float b = 0.596227f;
+    // Extract the sign bits
+    uint32_t ux_s  = sign_mask & *((uint32_t *)&x);
+    uint32_t uy_s  = sign_mask & *((uint32_t *)&y);
+    // Determine the quadrant offset
+    float q = (float)( ( ~ux_s & uy_s ) >> 29 | ux_s >> 30 ); 
+    // Calculate the arctangent in the first quadrant
+    float bxy_a = fabs( b * x * y );
+    float num = bxy_a + y * y;
+    float atan_1q =  num / ( x * x + bxy_a + num );
+    // Translate it to the proper quadrant
+    uint32_t uatan_2q = (ux_s ^ uy_s) | *((uint32_t *)&atan_1q);
+    return q + *((float *)&uatan_2q);
+}
+
+float  sqrt_fast(const float x){
+	const float xhalf = 0.5f*x;
+	union{float x;int i;} u;
+	u.x = x;
+	u.i = 0x5f3759df - (u.i >> 1);  // gives initial guess y0
+	return x*u.x*(1.5f - xhalf*u.x*u.x);// Newton step, repeating increases accuracy 
+}
+float powf_fast(float a,float b){
+	return a;
+}
 float getAX(){
-	mpu_data.AX = K*(mpu_data.AX + (mpu_data_raw.GyrX- avggX) * dt) + (1.0 - K) * atan2f(mpu_data_raw.AccX,sqrt(powf(mpu_data_raw.AccY,2.0) + powf(mpu_data_raw.AccZ,2.0)));
-	//printf("AX en ° : %f\t",mpu_data.AX * 180.0 / M_PI);
-	return mpu_data.AX;
+	return mpu_data.AX = K*(mpu_data.AX + (mpu_data_raw.GyrX- avggX) * dt) + (1.0 - K) * atan2_fast(mpu_data_raw.AccX,sqrt_fast(powf_fast(mpu_data_raw.AccY,2.0) + powf_fast(mpu_data_raw.AccZ,2.0)));
 }
 
 float getAY(){
-	mpu_data.AY = K*(mpu_data.AY + (mpu_data_raw.GyrY- avggY) * dt) + (1.0 - K) * atan2f(mpu_data_raw.AccY,sqrt(powf(mpu_data_raw.AccX,2.0) + powf(mpu_data_raw.AccZ,2.0)));
-	//printf("AY en ° : %f\n",mpu_data.AY * 180.0 / M_PI);
-	return mpu_data.AY;
+	return mpu_data.AY = K*(mpu_data.AY + (mpu_data_raw.GyrY- avggY) * dt) + (1.0 - K) * atan2_fast(mpu_data_raw.AccY,sqrt_fast(powf_fast(mpu_data_raw.AccX,2.0) + powf_fast(mpu_data_raw.AccZ,2.0)));
 }
